@@ -1,0 +1,15 @@
+# Navidrome test server with the transcoding cache off.
+# Every transcoded play is a live transcode, so the bug occurs on every play.
+services:
+  navidrome:
+    image: deluan/navidrome:0.64.2
+    container_name: amperfy-seek-repro
+    ports:
+      - "${ND_PORT:-4533}:4533"
+    environment:
+      ND_TRANSCODINGCACHESIZE: "0"
+      ND_DEVAUTOCREATEADMINPASSWORD: "${ND_ADMIN_PASSWORD:-seektest}"
+      ND_LOGLEVEL: debug
+    volumes:
+      - ./music:/music:ro
+      - ./data:/data
