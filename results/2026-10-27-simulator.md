@@ -1,4 +1,4 @@
-<!-- TODO before publishing: confirm the "master" column with the tester. -->
+<!-- TODO before publishing: confirm the three "master" rows that have no recording (fast seeks, seek to 4:50, lock screen). -->
 
 # Results: 2026-10-27, iOS Simulator
 
@@ -33,13 +33,24 @@ PASS  timeOffset=150 of 300 s gives about half the bytes (4801678 of 9601521)
 
 | Test | `master` | PR #859 |
 |---|---|---|
-| The duration shows on the first play | Fail (0:00) | Pass (5:00) |
-| Seek forward to 2:00 | Fail | Pass |
-| Seek back to 0:30 | Fail | Pass |
-| Do many seeks fast | Fail (the playback stops) | Pass |
-| Pause, then seek | Fail | Pass |
-| Seek to 4:50 | Fail | Pass ("Seek Test 2" starts at 5:00) |
+| The duration shows on the first play | Fail (`--:--`) [1] | Pass (`-4:57` remaining) [4] |
+| Seek forward | Fail [1] [2] | Pass [4] |
+| Seek back | Fail [1] [2] | Pass [4] |
+| Do many seeks fast | Fail (the playback stops) | Pass [4] |
+| Pause, then seek | Fail [2] | Pass [4] |
+| Seek to 4:50 | Fail | Pass (the next track starts at 5:00) |
 | Use the lock screen scrubber | Fail | Pass |
+
+Recordings in `recordings/`:
+
+1. `master-2-seek-ignored.mp4`
+2. `master-3-seek-and-pause-fail.mp4`
+3. `master-4-works-after-amperfy-download.mp4`
+4. `pr-859-duration-and-seeking.mp4`
+
+The rows without a number are from the tester's notes, without a recording.
+
+Recording 3 shows a replay on `master` from the copy that Amperfy downloaded during the first play. The player shows a download icon instead of the antenna icon (`playType == .cache` in `PlayerUIHandler.swift`). On this replay, the duration and seeking work. The Navidrome cache is off in this test. Thus Amperfy's downloaded copy, not the Navidrome cache, makes the replay work here.
 
 ## Server log of the PR build
 

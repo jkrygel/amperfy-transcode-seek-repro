@@ -6,9 +6,26 @@ The test makes the bug occur on every play. It does not need a slow network, a c
 
 Results: [results/2026-10-27-simulator.md](results/2026-10-27-simulator.md)
 
+## Recordings
+
+The same song, streamed as a live MP3 transcode, a few seconds after the start:
+
+| `master` | PR #859 |
+|---|---|
+| ![master shows --:-- as the duration](recordings/compare-master.png) | ![PR #859 shows -4:57 as the remaining time](recordings/compare-pr-859.png) |
+
+Screen recordings from the iOS Simulator:
+
+| Recording | Build | What it shows |
+|---|---|---|
+| [master-2-seek-ignored.mp4](recordings/master-2-seek-ignored.mp4) | `master` | The duration is `--:--`. The scrubber shows `0:00` on both sides. After each seek, the counter continues from the old position. |
+| [master-3-seek-and-pause-fail.mp4](recordings/master-3-seek-and-pause-fail.mp4) | `master` | Seeks while the song plays and while it is paused. The position does not change. |
+| [master-4-works-after-amperfy-download.mp4](recordings/master-4-works-after-amperfy-download.mp4) | `master` | The first play streams (antenna icon), and the duration is `--:--`. After a replay from the downloaded copy (download icon), the duration and seeking work. |
+| [pr-859-duration-and-seeking.mp4](recordings/pr-859-duration-and-seeking.mp4) | PR #859 | The first play streams (antenna icon). The remaining time shows at once. Seeks forward, seeks back, fast seeks, and seeks while paused all work. |
+
 ## The bug
 
-Amperfy streams a song that Navidrome transcodes, for example to MP3 at 256 kbps. The player shows a duration of 0:00. Seeking does not work. After many seeks, the playback stops, but the app continues to show "playing". If you do not seek, the song plays from start to end.
+Amperfy streams a song that Navidrome transcodes, for example to MP3 at 256 kbps. The player shows `--:--` as the duration. Seeking does not work. After many seeks, the playback stops, but the app continues to show "playing". If you do not seek, the song plays from start to end.
 
 ## Cause
 
@@ -16,7 +33,7 @@ Navidrome transcodes the song with ffmpeg while it sends the song. The size of t
 
 AudioStreaming, the player library in Amperfy, calculates the duration from the byte length. It seeks with HTTP range requests. A live transcode supports neither.
 
-On a second play, Navidrome usually sends the song from its transcoding cache. A cached file has a size and supports range requests. Thus the bug occurs only on the first play of a song at a given format and bitrate, and it looks random.
+On a second play, the song usually comes from a cache. This is the transcoding cache of Navidrome, or the copy that Amperfy downloads while it plays the song. A cached file has a size and supports range requests. Thus the bug occurs only on the first play of a song, and it looks random.
 
 PR #859 makes two changes:
 
@@ -37,6 +54,7 @@ The test server is Navidrome 0.64.2 with the transcoding cache off (`ND_TRANSCOD
 | `scripts/build-sims.sh` | Builds Amperfy `master` and the PR, and installs each build in its own simulator |
 | `scripts/seek-log.py` | Lists the stream requests from the server log, without credentials |
 | `results/` | Test results |
+| `recordings/` | Screen recordings and images of the tests |
 
 ## Requirements
 
@@ -76,6 +94,10 @@ The test server is Navidrome 0.64.2 with the transcoding cache off (`ND_TRANSCOD
 6. In each simulator, log in to `http://127.0.0.1:4533` with the user `admin` and the password `seektest`.
 7. In each simulator, open Settings > Player, Stream & Scrobble. Set the WiFi streaming format to MP3 and the bitrate limit to 256 kbps.
 8. In each simulator, play "Seek Test 1". Do the tests in the table below. Use the time counters, because the tracks are only a beep each second.
+
+   Note: Amperfy can download a song while it plays the song. A replay then uses the downloaded copy, and the bug does not occur. The player shows a download icon instead of an antenna icon for a downloaded copy.
+
+   If the player shows the download icon, use a different track, or remove the downloaded copy in Amperfy.
 9. Show the stream requests from the server log:
 
    ```sh
@@ -88,7 +110,7 @@ The test server is Navidrome 0.64.2 with the transcoding cache off (`ND_TRANSCOD
 
 | Test | Result before the fix | Result with the fix |
 |---|---|---|
-| The duration shows on the first play | 0:00 | 5:00 |
+| The duration shows on the first play | `--:--` | The remaining time, for example `-4:57` |
 | Seek forward to 2:00 | No change | The counter goes to 2:00, and the playback continues |
 | Seek back to 0:30 | No change | The counter goes to 0:30, and the playback continues |
 | Do many seeks fast | The playback stops | The playback continues |
