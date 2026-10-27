@@ -1,5 +1,3 @@
-<!-- TODO before publishing: confirm the three "master" rows that have no recording (fast seeks, seek to 4:50, lock screen). -->
-
 # Results: 2026-10-27, iOS Simulator
 
 ## Environment

@@ -93,7 +93,7 @@ The test server is Navidrome 0.64.2 with the transcoding cache off (`ND_TRANSCOD
 5. Open both simulators from Xcode.
 6. In each simulator, log in to `http://127.0.0.1:4533` with the user `admin` and the password `seektest`.
 7. In each simulator, open Settings > Player, Stream & Scrobble. Set the WiFi streaming format to MP3 and the bitrate limit to 256 kbps.
-8. In each simulator, play "Seek Test 1". Do the tests in the table below. Use the time counters, because the tracks are only a beep each second.
+8. In each simulator, play "Seek Test 1". Do the tests in the [app test table](results/2026-10-27-simulator.md#app-tests). Use the time counters, because the tracks are only a beep each second.
 
    Note: Amperfy can download a song while it plays the song. A replay then uses the downloaded copy, and the bug does not occur. The player shows a download icon instead of an antenna icon for a downloaded copy.
 
@@ -105,18 +105,6 @@ The test server is Navidrome 0.64.2 with the transcoding cache off (`ND_TRANSCOD
    ```
 
    In the PR build, each seek shows as a request with a `timeOffset` value. The `bytes` column must be almost equal to the `expected` column.
-
-## Tests
-
-| Test | Result before the fix | Result with the fix |
-|---|---|---|
-| The duration shows on the first play | `--:--` | The remaining time, for example `-4:57` |
-| Seek forward to 2:00 | No change | The counter goes to 2:00, and the playback continues |
-| Seek back to 0:30 | No change | The counter goes to 0:30, and the playback continues |
-| Do many seeks fast | The playback stops | The playback continues |
-| Pause, then seek | No change | The song stays paused at the new position |
-| Seek to 4:50 | No change | At 5:00, "Seek Test 2" starts |
-| Use the lock screen scrubber | No change | The lock screen and the player go to the new position |
 
 ## Clean up
 
